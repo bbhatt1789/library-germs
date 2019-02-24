@@ -25,11 +25,9 @@ def input_fasta(fas = None): #read fasta
     sequence = []
     refac = []
     for ix in seq:
-        if   ix.description.count('gi') == 1: #select unique protein
-            
+        if   ix.description.count('gi') == 1: #select unique protein            
             headers.append(ix.description.split('|'))
             sequence.append(str(ix.seq))
-
     for x in headers:
         refac.append(str(x[3]).split('_'))
     ref = pd.DataFrame(refac)   
@@ -63,8 +61,7 @@ def merge_pep(pep_ = None, ref = None):
     return ref2pep
     
 def proteinlist(ref2pep_ = None):
-    plist_tgs = ref2pep_.groupby(['pep_Sequence'])['protein_gi'].agg(lambda x: ','.join(set(x))).reset_index()
-    
+    plist_tgs = ref2pep_.groupby(['pep_Sequence'])['protein_gi'].agg(lambda x: ','.join(set(x))).reset_index()    
     plist_tgs['pep_ProteinCount'] = plist_tgs['protein_gi'].apply(lambda x: len(x.split(',')))
     plist_tgs.rename(columns = {'protein_gi': 'pep_ProteinList'}, inplace = True)
     return plist_tgs.drop_duplicates()
