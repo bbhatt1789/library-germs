@@ -4,6 +4,9 @@ import numpy as np
 from pyteomics import parser
 from pyteomics.mass import mass
 from collections import defaultdict
+from pyteomics import parser
+from pyteomics.mass import mass
+import time
 
 date_ = time.strftime('%m/%d/%Y %H:%M:%S %p')
 #subprocess.call('RefProtDB download 9606 10090')
@@ -39,7 +42,12 @@ def digest_protein(protein = None):
     digest = parser.cleave(protein, '[KR]', missed_cleavages = 3, min_length = 6)              
     return digest
     
-
+def splitDataFrameIntoSmaller(df, chunkSize = 10000): 
+    listOfDf = list()
+    numberChunks = len(df) // chunkSize + 1
+    for i in range(numberChunks):
+        listOfDf.append(df[i*chunkSize:(i+1)*chunkSize])
+    return listOfDf
     
 def digest(ref = None):
     pep_ = pd.DataFrame()
@@ -61,8 +69,8 @@ def proteinlist(ref2pep_ = None):
     plist_tgs.rename(columns = {'protein_gi': 'pep_ProteinList'}, inplace = True)
     return plist_tgs.drop_duplicates()
     
-def main():
-    refseq = input_fasta(fas = 'ribosomal_Bacterial_2016_ribosome.fasta')   
+def main(fasta = None):
+    refseq = input_fasta(fas = fasta)   
     pep = digest(refseq)
     ref2pep = merge_pep(pep_ = pep, ref = refseq )
     peptide = proteinlist(ref2pep_ = ref2pep)
@@ -70,5 +78,6 @@ def main():
     all_pep.drop(columns = ['level_0','level_1'], inplace = True)
     return all_pep.drop_duplicates()
 
-peptides = main()    
+fasta_ribosomes = input('Enter fasta name with full path:' )
+peptides = main(fasta = fasta_ribosomes)    
 peptides.loc[peptides['pep_ProteinCount'] == 1].to_csv('unique_ribosomal_bacterial_proteins.tab', sep = '\t', index = False)
